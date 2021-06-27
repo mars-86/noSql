@@ -5,18 +5,12 @@
 #include "../utils/template/list.h"
 #include "../utils/template/stack.h"
 #include "../utils/template/queue.h"
-#ifdef __linux__
-#define NADA 0
-#elif __WIN32
-#define NADA 1
-#endif // __WIN32
+#include "../utils/networking/header.h"
+#include "../utils/networking/status_codes.h"
+#include "../utils/os/os.h"
 
-#ifdef _CARAJO_
-#define NADA 4
-#endif // _CARAJO_
 int main(void)
 {
-    printf("%d", NADA);
     socket_t sock;
     sock.domain = AF_INET;
     sock.type = TCP_SOCKET;
@@ -29,27 +23,23 @@ int main(void)
     if (!open_connection(&sock))
         printf("Listening for connections\n");
 
-    char buff[512];
-    char res[] =
-                "HTTP/1.1 200 OK\r\n\r\n"
-                "<h1>We've got a badass over here!</h1>";
-
+    char buff[512], buff_s[512];
     int bytes_recv, bytes_send;
     do {
-        bytes_recv = 1;
-        bytes_recv = recv(sock.descriptor, buff, 128, 0);
+        bytes_recv = recv(sock.descriptor, buff, 512, 0);
         if (bytes_recv > 0) {
             printf("%s\n", buff);
-            bytes_send = send(sock.descriptor, res, strlen(res), 0);
+            generate_headers(buff_s, OK, "<h1>We've got a badass over here!</h1>");
+            bytes_send = send(sock.descriptor, buff_s, strlen(buff_s), 0);
             if (bytes_send == -1)
-                perror_m("send");
+                perror_win("send");
             else
                 printf("%d bytes sent\n", bytes_send);
         }
         else if (!bytes_recv)
             printf("Connection closed\n");
         else
-            perror_m("recv");
+            perror_win("recv");
     } while (bytes_recv > 0);
 
     close_connection(&sock);
