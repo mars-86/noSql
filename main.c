@@ -5,9 +5,18 @@
 #include "../utils/template/list.h"
 #include "../utils/template/stack.h"
 #include "../utils/template/queue.h"
+#ifdef __linux__
+#define NADA 0
+#elif __WIN32
+#define NADA 1
+#endif // __WIN32
 
+#ifdef _CARAJO_
+#define NADA 4
+#endif // _CARAJO_
 int main(void)
 {
+    printf("%d", NADA);
     socket_t sock;
     sock.domain = AF_INET;
     sock.type = TCP_SOCKET;
